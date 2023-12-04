@@ -30,23 +30,18 @@ with open("day4.txt") as file:
         for number in my_numbers:
             if number in winning_numbers:
                 winning_number_count += 1
-                # First match gets a point, subsequent ones double the 
-                # points
-                if winning_number_count == 1:
-                    card_points = 1
-                else:
-                    card_points *= 2
+                
         if winning_number_count > 0:
             # This copies cards based on wining number count and propagates them
             # forward. We never have to actually manage the cards in memory, instead
             # we can just keep track of how many copies we would create.
             for i in range(card+1,card+1+winning_number_count):
                 copies[i] = copies.get(card, 0)+1 + copies.get(i, 0)
-        part1 += card_points
+
+            # First win is worth 1, each additional doubles
+            part1 += 2**(winning_number_count-1)
         #print(winning, my_nums, points)
         part2 += 1
+        
 answer(part1)
-
-for winning_number_count in copies:
-    part2 += copies[winning_number_count]
-answer(part2)
+answer(part2+sum(copies.values()))
