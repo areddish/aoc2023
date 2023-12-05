@@ -15,7 +15,7 @@ def answer(v):
 part1 = 0
 part2 = 0
 
-copies = {}
+copies = defaultdict(int)
 #with open("test.txt") as file:
 with open("day4.txt") as file:
     for card, line in enumerate(file.readlines()):
@@ -24,6 +24,9 @@ with open("day4.txt") as file:
         # single digits have a leading whitespace, remove it before splitting.
         my_numbers = parts[1].strip().replace("  "," ").split(" ")
         winning_numbers = parts[0].strip().split(":")[1].strip().replace("  "," ").split(" ")
+
+        # count the original as a "copy" since we'll sum this structure to get a total count,
+        copies[card] += 1
 
         winning_number_count = 0
         card_points = 0
@@ -36,12 +39,11 @@ with open("day4.txt") as file:
             # forward. We never have to actually manage the cards in memory, instead
             # we can just keep track of how many copies we would create.
             for i in range(card+1,card+1+winning_number_count):
-                copies[i] = copies.get(card, 0)+1 + copies.get(i, 0)
+                copies[i] += copies.get(card, 0)
 
             # First win is worth 1, each additional doubles
             part1 += 2**(winning_number_count-1)
         #print(winning, my_nums, points)
-        part2 += 1
         
 answer(part1)
-answer(part2+sum(copies.values()))
+answer(sum(copies.values()))
