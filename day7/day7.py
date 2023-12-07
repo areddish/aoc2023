@@ -12,13 +12,15 @@ def answer(v):
     print("Part 1 =" if answer_part == 1 else "Part 2 =", v)
     answer_part = 2
 
-part1 = 0
-part2 = 0
-
 # Used to convert from card to a sortable numeric value. The order is 
 # strongest to weakest.
 ORDER = list("AKQJT98765432")
 ORDER_WITH_JOKERS = list("AKQT98765432J")
+
+# Process in this order and prepend the hand values with the type value so that when we
+# sort the type is considered first, then the card strength
+TYPE_BUCKET_KEY_ORDER = ["five", "four", "full", "three", "twopair", "pair", "high"]
+TYPE_BUCKET_VALUES = range(len(TYPE_BUCKET_KEY_ORDER)+1,0,-1)
 
 def rank(hand, bid, type, use_wildcard=False):
     card_counter = Counter(hand)
@@ -84,6 +86,18 @@ def rank(hand, bid, type, use_wildcard=False):
 
     type[hand_type].append((hand, bid))                
 
+def score_hands(type_buckets, card_strengths):
+    result = 0
+    hand_values = []
+    card_strengths_rank = { ch: len(card_strengths)-card_strengths.index(ch) for ch in card_strengths}
+    for i in range(len(TYPE_BUCKET_KEY_ORDER)):
+        for hand, bid in type_buckets[TYPE_BUCKET_KEY_ORDER[i]]:
+            hand_values.append(([TYPE_BUCKET_VALUES[i]] + [card_strengths_rank[card] for card in hand], bid))
+
+    for i,hand in enumerate(sorted(hand_values, key=lambda x:x[0], reverse=False)):
+        result += (i+1) * hand[1]
+    return result
+
 #with open("test.txt") as file:
 with open("day7.txt") as file:
     type_buckets = defaultdict(list)
@@ -93,31 +107,7 @@ with open("day7.txt") as file:
         rank(hand,int(bid), type_buckets)
         rank(hand,int(bid), type_buckets_with_wildcard, use_wildcard=True)
 
-    # Process in this order and prepend the hand values with the type value so that when we
-    # sort the type is considered first, then the card strength
-    type_bucket_key_order = ["five", "four", "full", "three", "twopair", "pair", "high"]
-    type_bucket_values = range(len(type_bucket_key_order)+1,0,-1)
-
     ## Part 1
-    hand_values = []
-    ORDER_RANK = { ch: len(ORDER)-ORDER.index(ch) for ch in ORDER}
-    for i in range(len(type_bucket_key_order)):
-        for hand, bid in type_buckets[type_bucket_key_order[i]]:
-            hand_values.append(([type_bucket_values[i]] + [ORDER_RANK[card] for card in hand], bid))
-
-    for i,hand in enumerate(sorted(hand_values, key=lambda x:x[0], reverse=False)):
-        part1 += (i+1) * hand[1]
-
+    answer(score_hands(type_buckets, ORDER))
     ## Part 2
-    hand_values = []
-    ORDER_RANK = { ch: len(ORDER_WITH_JOKERS)-ORDER_WITH_JOKERS.index(ch) for ch in ORDER_WITH_JOKERS}
-    for i in range(len(type_bucket_key_order)):
-        t = type_bucket_key_order[i]
-        hands = type_buckets_with_wildcard[t]
-        for hand, bid in hands:
-            hand_values.append(([type_bucket_values[i]] + [ORDER_RANK[card] for card in hand], bid))
-
-    for i,hand_bid in enumerate(sorted(hand_values, key=lambda x:x[0], reverse=False)):
-            part2 += (i+1) * hand_bid[1]
-answer(part1)
-answer(part2)
+    answer(score_hands(type_buckets_with_wildcard, ORDER_WITH_JOKERS))
