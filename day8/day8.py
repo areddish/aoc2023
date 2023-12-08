@@ -48,15 +48,8 @@ answer(traverse(move_graph, directions, "AAA", lambda loc: loc == "ZZZ"))
 
 # part 2
 starting_locations = []
-steps_to_end = []
+part2 = 1
 for src in move_graph:
     if src[-1] == "A":
-        starting_locations.append(src)
-#print(starting_locations)
-for i in range(len(starting_locations)):
-    steps_to_end.append(traverse(move_graph, directions, starting_locations[i], lambda loc: loc[-1] == "Z"))
-#print(steps_to_end)
-part2 = steps_to_end[0]
-for step_count in steps_to_end[1:]:
-    part2 = lcm(part2, step_count)
+        part2 = lcm(part2, traverse(move_graph, directions, src, lambda loc: loc[-1] == "Z"))
 answer(part2)
