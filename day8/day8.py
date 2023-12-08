@@ -1,4 +1,3 @@
-from collections import defaultdict, Counter
 import math
 
 ###
@@ -18,6 +17,7 @@ def lcm(a, b):
 
 move_graph = {}
 directions = None
+
 #with open("test.txt") as file:
 #with open("test2.txt") as file:
 with open("day8.txt") as file:
@@ -30,47 +30,33 @@ with open("day8.txt") as file:
         parts = line.strip().split(" = ")
         src = parts[0]
         l,r = parts[1].replace("(","").replace(")","").split(", ")
-        print(parts, src, r, l)
         move_graph[src] = { "L": l, "R": r}
 
-    cur = "AAA"
+def traverse(move_graph, directions, start, end_condition):
+    cur = start
     steps = 0
     stop = False
     while not stop:
         for dx in list(directions):
             cur = move_graph[cur][dx]
             steps += 1
-            if cur == "ZZZ":
-                answer(steps)
-                stop = True
-                break
+            if end_condition(cur):
+                return steps
 
-    cur = []
-    cycles = []
-    for src in move_graph:
-        if src[-1] == "A":
-            cur.append(src)
-            cycles.append(None)
-    print(cur)
-    steps = 0
-    stop = False
-    
-    while not stop:
-        for dx in list(directions):
-            for i in range(len(cur)):
-                cur[i] = move_graph[cur[i]][dx]
-            steps += 1
-            done = False
-            # if steps % 1000:
-            #     print(cur)
-            for i in range(len(cur)):
-                if cur[i][-1] == "Z" and cycles[i] == None:
-                    cycles[i] = steps
-                    print("CYCLES:", cycles)
-            if all(cycles):
-                stop = True
-                part2 = cycles[0]
-                for i in range(1,len(cycles)):
-                    part2 = lcm(part2, cycles[i])
-                answer(part2)
-                break
+# part 1
+answer(traverse(move_graph, directions, "AAA", lambda loc: loc == "ZZZ"))
+
+# part 2
+starting_locations = []
+steps_to_end = []
+for src in move_graph:
+    if src[-1] == "A":
+        starting_locations.append(src)
+#print(starting_locations)
+for i in range(len(starting_locations)):
+    steps_to_end.append(traverse(move_graph, directions, starting_locations[i], lambda loc: loc[-1] == "Z"))
+#print(steps_to_end)
+part2 = steps_to_end[0]
+for step_count in steps_to_end[1:]:
+    part2 = lcm(part2, step_count)
+answer(part2)
