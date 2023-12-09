@@ -19,15 +19,14 @@ with open("day9.txt") as file:
         parts = line.strip().split(" ")
         history = [int(x) for x in parts]
         #print(history)
-        all_zeros = False
         differences = [history]
-        c = 1
-        while not all([n == 0 for n in differences[c-1]]):       
+        i = 1
+        while not all([n == 0 for n in differences[i-1]]):       
             differences.append([])
-            for n in range(len(differences[c-1])-1):
-                differences[c].append(differences[c-1][n+1] - differences[c-1][n])
+            for n in range(len(differences[i-1])-1):
+                differences[i].append(differences[i-1][n+1] - differences[i-1][n])
             #print(differences[c])                            
-            c += 1
+            i += 1
 
         differences[-1].append(0)
         differences[-1].insert(0, 0)        
