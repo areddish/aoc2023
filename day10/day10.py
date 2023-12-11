@@ -198,7 +198,7 @@ def traverse(board, existing_path=None, inside=None):
     path = defaultdict(list)
     path[c1[1]].append(c1[0])
 
-    dir = board.find_starting_dir()#list(m2[board[c1[1]][c1[0]]].values())[0]
+    dir = board.find_starting_dir()
     Stop = False
 
     directed_path = defaultdict(list)
@@ -256,115 +256,6 @@ def run(file, render_answer=False):
         render(board.board, board.width, board.height, path)
 
     return part1, part2
-
-    # # # scan l to r 
-    # inside_chars = ["|", "L", "F"]
-    # for y in sorted(path.keys()):
-    #     x_scanline = sorted(path[y])
-    #     # for x in range(len(x_scanline)-1):
-    #     #     part2 += x_scanline[x+1] - x_scanline[x]
-    #     start = min(x_scanline)
-    #     end = max(x_scanline)
-    #     print(y,start,end)
-    #     while start < end:
-    #         if board[y][start] == "|":
-    #             start += 1 
-    #             while board[y][start] == ".":
-    #                 part2 += 1
-
-    #         while start in x_scanline and start < end:
-    #             start += 1
-    #         while start not in x_scanline and start < end:
-    #             part2 += 1
-    #             start += 1
-
-    def can_reach_path(board, path, cur):
-        x,y = cur
-        if cur in path:
-            return False
-        if board[y][x] != ".":
-            return False
-        
-        hit_path = 0
-        # up
-        for ny in range(y,-1,-1):
-            if path.get((x,ny), None) == get_right_dir(N):
-                hit_path += 1
-                break
-
-        # down
-        for ny in range(y,len(board),1):
-            #if x in path[ny]:
-            if path.get((x,ny), None) == get_right_dir(S):
-                hit_path += 1
-                break
-
-        # left
-        for nx in range(x,-1,-1):
-            #if nx in path[y]:
-            if path.get((nx,y), None) == get_right_dir(E):
-                hit_path += 1
-                break
-
-        # right
-        for nx in range(x,len(board[0]),1):
-            #if nx in path[y]:
-            if path.get((nx,y), None) == get_right_dir(W):
-                hit_path += 1
-                break
-
-        return hit_path == 4
-
-    def can_reach_path2(board, path, cur):
-        x,y = cur
-        if cur in path:
-            return False
-        if board[y][x] != ".":
-            return False
-        
-        # go left and right
-        hit_path = 0
-        # up
-        for ny in range(y,-1,-1):
-            if path.get((x,ny), None) == get_right_dir(N):
-                hit_path += 1
-                break
-
-        # down
-        for ny in range(y,len(board),1):
-            #if x in path[ny]:
-            if path.get((x,ny), None) == get_right_dir(S):
-                hit_path += 1
-                break
-
-        # left
-        for nx in range(x,-1,-1):
-            #if nx in path[y]:
-            if path.get((nx,y), None) == get_right_dir(E):
-                hit_path += 1
-                break
-
-        # right
-        for nx in range(x,len(board[0]),1):
-            #if nx in path[y]:
-            if path.get((nx,y), None) == get_right_dir(W):
-                hit_path += 1
-                break
-
-        return hit_path == 4
-
-    marked_board = []
-    for y in range(H):
-        row = []
-        for x in range(Width):
-            if can_reach_path(board, directed_path, (x,y)):
-                part2 += 1
-                row.append("I")
-            else:
-                row.append(board[y][x])
-        marked_board.append(row)
-    pb(marked_board, Width, H)
-    answer(part2)
 
 if __name__ == "__main__":
     run("day10.txt", render_answer=True)
