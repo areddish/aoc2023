@@ -2,7 +2,7 @@ from itertools import permutations
 from copy import copy
 import sys
 if __name__ == "__main__":
-    start = int(sys.argv[1])
+    start = 0# int(sys.argv[1])
 
     ###
     #   Submission helper, print the answer and copy it to the clipboard
@@ -37,17 +37,23 @@ if __name__ == "__main__":
 
     def count_groupings(str):
         groups = []
+        strictness = []
         cur = 0
+        saw_wildcard = False
         for ch in str:
             if ch == "." or ch == "?":
+                saw_wildcard = saw_wildcard or ch == "?"
                 if cur > 0:
                     groups.append(cur)
+                    strictness.append(saw_wildcard)
                     cur = 0
+                    saw_wildcard = False
             if ch == "#":
                 cur += 1
         if cur > 0:
             groups.append(cur)
-        return tuple(groups)
+            strictness.append(saw_wildcard)
+        return tuple(groups), strictness
 
     def generate_pattern(p_length):
         g = set()
@@ -103,11 +109,13 @@ if __name__ == "__main__":
 
     memo = {}
     def rtry(springs_str, groupings):
+
         global memo
         if (springs_str, groupings) in memo:
             return memo[(springs_str, groupings)]
         
-        temp_groupings = count_groupings(springs_str)
+        temp_groupings, strictness = count_groupings(springs_str)
+        print(springs_str, groupings, temp_groupings)
         # we matched exactly
         if temp_groupings == groupings:
             memo[(springs_str, groupings)] = 1
@@ -122,6 +130,15 @@ if __name__ == "__main__":
             memo[(springs_str, groupings)] = 0
             return 0
         
+        # for i in range(len(temp_groupings)):
+        #     if strictness[i] and (i > len(groupings) or temp_groupings[i] != groupings[i]):
+        #         memo[(springs_str, groupings)] = 0
+        #         return 0
+            
+        if max(temp_groupings) > max(groupings):
+            memo[(springs_str, groupings)] = 0
+            return 0
+        
         ans = 0
         for i in range(len(springs_str)):
             if springs_str[i] == "?":
@@ -133,8 +150,8 @@ if __name__ == "__main__":
         memo[(springs_str, groupings)] = 0
         return 0
 
-    #with open("test.txt") as file:
-    with open("day12.txt") as file:
+    with open("test.txt") as file:
+    #with open("day12.txt") as file:
         for y,line in enumerate(file.readlines()): 
             if y < start:
                 if y % 100 == 0:
@@ -144,7 +161,7 @@ if __name__ == "__main__":
             line = line.strip()
             line = line.replace("....", ".")
             line = line.replace("...", ".")
-            line = line.replace("..", ".")        
+            line = line.replace("..", ".") 
             springs, grouping = line.split()
             grouping = tuple([int(x) for x in grouping.split(",")])
     #        springs, grouping = clean(springs, grouping)
