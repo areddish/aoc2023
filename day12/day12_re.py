@@ -1,18 +1,49 @@
-from itertools import permutations
 from copy import copy
-import sys
 from functools import lru_cache
+
 ###
 #   Submission helper, print the answer and copy it to the clipboard
 #   to reduce the amount of times I have the answer and mistype it :).
 ###
-#import pyperclip
+import pyperclip
 answer_part = 1
 def answer(v):
     global answer_part
-    #pyperclip.copy(v)
+    pyperclip.copy(v)
     print("Part 1 =" if answer_part == 1 else "Part 2 =", v)
     answer_part = 2
+
+def count_groupings(str):
+    groups = []
+    cur = 0
+    for ch in str:
+        if ch == "." or ch == "?":
+            if cur > 0:
+                groups.append(cur)
+                cur = 0
+        if ch == "#":
+            cur += 1
+    if cur > 0:
+        groups.append(cur)
+    return tuple(groups)
+
+# Slow brute force, but worked for part 1.
+def solve_part1_slow(springs_str, groupings):
+    temp_groupings = count_groupings(springs_str)
+    # we matched exactly
+    if temp_groupings == groupings:
+        return 1
+
+    # not enough to match
+    if len(springs_str) < sum(groupings)+len(groupings)-1:
+        return 0
+
+    for i in range(len(springs_str)):
+        if springs_str[i] == "?":
+            ans = solve_part1_slow(springs_str[:i]+"#"+springs_str[i+1:], groupings) + solve_part1_slow(springs_str[:i]+"."+springs_str[i+1:], groupings)
+            return ans
+    #if str.find("?") != -1:
+    return 0
 
 @lru_cache
 def solve(s, groupings):
@@ -26,7 +57,8 @@ def solve(s, groupings):
         return 0
     
     # leading .'s don't impact solution, but help with the memoization for
-    # later problems, so just strip and solve
+    # later problems, so just strip and solve, pruning these will increase
+    # runtime..
     if s[0] == ".":
         return solve(s[1:], groupings)
 
@@ -89,30 +121,26 @@ def solve(s, groupings):
 # assert solve("????.######..#####.", [1,6,5]) == 4 
 # assert solve("?###????????", [3,2,1]) == 10, solve("?###????????", [3,2,1])
 
-
 part1 = 0
 part2 = 0
 #with open("test.txt") as file:
 with open("day12.txt") as file:
     for y,line in enumerate(file.readlines()): 
-        print("Processing #",y,end="")
+        print("Processing #",y)
         line = line.strip()
         # line = line.replace("....", ".")
         # line = line.replace("...", ".")
         # line = line.replace("..", ".") 
         springs, grouping = line.split()
         grouping = tuple([int(x) for x in grouping.split(",")])
-#        springs, grouping = clean(springs, grouping)
-#        print(springs, " Cleaned = ", springs)
-        res1 = solve(springs, grouping)
-        print(" p1 = ", res1)
-        part1 += res1
-
-        esprings = springs
-        egroups = copy(grouping)
+        #part1 += solve_part1_slow(springs, grouping)
+        #assert solve_part1_slow(springs, grouping) == solve(springs, grouping)        
+        part1 += solve(springs, grouping)
+        expanded_springs = springs
+        expanded_groups = copy(grouping)
         for i in range(4):
-            esprings += "?" + springs
-            egroups += grouping
-        part2 += solve(esprings, egroups)
+            expanded_springs += "?" + springs
+            expanded_groups += grouping
+        part2 += solve(expanded_springs, expanded_groups)
 answer(part1)
 answer(part2)
