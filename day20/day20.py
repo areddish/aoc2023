@@ -63,9 +63,6 @@ class Conjunction:
             signals_to_send.append((dest, send_, self.name))
         return signals_to_send
 
-        # for dest in self.out:
-        #     dest.pulse_in(self, send_)
-
 class Broadcaster:
     def __init__(self, outs):
         self.name = "broadcaster"
@@ -90,6 +87,7 @@ def get_or_create_node(name, outs):
 
     return node
 
+part2_input_node_name = None
 #with open("test.txt") as file:
 #with open("test2.txt") as file:
 with open("day20.txt") as file:
@@ -109,6 +107,13 @@ with open("day20.txt") as file:
                 nn = nodes[other_node_name]
                 if n.name in nn.out:
                     n.add_input(nn.name)
+            # Part 2 - find the feed in for "rx". For atleast my input
+            # it's a conjuciton, which means we need to watch the inputs of
+            # that feeder node.
+            if "rx" in n.out:
+                assert part2_input_node_name == None
+                part2_input_node_name = n.name
+
 count = {
     LOW: 0,
     HIGH: 0
@@ -118,7 +123,7 @@ count = {
 # by the conjunction lv, we need to know when all of lv's inputs are high. So 
 # look for cycles and use LCM to figure out when the individual inputs will all be high, 
 # which will cause lv to output a low to rx!
-cycles = {name: [] for name in nodes["lv"].inputs}
+cycles = {name: [] for name in nodes[part2_input_node_name].inputs}
 
 button_press = 0
 while True:
@@ -135,14 +140,14 @@ while True:
         count[send_] += 1
         #print(f"{from_} --{'LOW' if send_ == LOW else 'HIGH'}-> {dest}")
 
-        if from_ in nodes["lv"].inputs and send_ == HIGH:
+        if from_ in nodes[part2_input_node_name].inputs and send_ == HIGH:
             cycles[from_].append(button_press)
             if len(cycles[from_]) > 2:
                 cycles[from_].pop(0)
                 #print(" ====== ")
                 #for f in nodes["lv"].inputs:
                 #    print (cycles[f][1] - cycles[f][0])
-                if all([len(cycles[input_name]) == 2 for input_name in nodes["lv"].inputs]):
+                if all([len(cycles[input_name]) == 2 for input_name in nodes[part2_input_node_name].inputs]):
                     part2 = 1
                     for k in cycles:
                         part2 = lcm(part2, cycles[k][1]-cycles[k][0])
