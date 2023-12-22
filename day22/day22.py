@@ -15,26 +15,7 @@ def answer(v):
 part1 = 0
 part2 = 0
 
-def is_in_cube(v, brick):
-    v1,v2 = brick
-    x,y,z = v
-
-    # this point is above
-    if z > max(v1[2],v2[2]):
-        return False
-    
-    # colinear
-    if v == v1 or v == v2:
-        return True
-
-    # point is inside this brick    
-    if (v1[0] <= x < v1[0] and v1[1] <= y < v1[1] and v1[2] <= z < v1[2]) or (v2[0] <= x < v2[0] and v2[1] <= y < v2[1] and v2[2] <= z < v2[2]):
-        return True
-    
-    return False
-
 def collide(bricks, brick, index, ignore_brick_index):
-    v1,v2 = brick
     for i in range(0, index-1):
         if i == ignore_brick_index:
             continue
@@ -60,13 +41,9 @@ def settle_bricks(bricks, ignore_brick_index, do_move):
 
     index = ignore_brick_index + 1 if ignore_brick_index else 0
     while index < len(z_sorted_bricks):
-        # if index == ignore_brick_index:
-        #     index += 1
-        #     continue
-
         brick = z_sorted_bricks[index]
-        dz = -1
         # try to move this down as far as it can go.
+        dz = -1
         nv1,nv2 = brick
         _, _, z1 = nv1
         _, _, z2 = nv2
@@ -74,6 +51,7 @@ def settle_bricks(bricks, ignore_brick_index, do_move):
             z1 += dz
             z2 += dz
 
+        # figure out how many moved and update if we need to.
         moved_brick = ((nv1[0],nv1[1],z1), (nv2[0],nv2[1],z2))
         num_moved += 1 if moved_brick != brick else 0
         if do_move:            
@@ -85,19 +63,30 @@ def settle_bricks(bricks, ignore_brick_index, do_move):
     return z_sorted_bricks, num_moved
 
 bricks = []
-with open("test.txt") as file:
-#with open("day22.txt") as file:
+#with open("test.txt") as file:
+with open("day22.txt") as file:
     for y,line in enumerate(file.readlines()): 
         v1,v2 = line.strip().split("~")
         bricks.append(([int(x) for x in v1.split(",")],[int(x) for x in v2.split(",")]))
 
+# Settle the bricks, brute force
 bricks, num_moved = settle_bricks(bricks, None, do_move=True)
 print(bricks)
+
 for i in range(len(bricks)):
     print("Testing brick",i)
     _, num_moved = settle_bricks(bricks, ignore_brick_index=i, do_move=False)    
+    # Part one is only interested in the number of blocks you CAN disintegrate
     if num_moved == 0:
         part1 += 1
 
+for i in range(len(bricks)-1,-1,-1):
+    print("Testing brick",i)
+    _, num_moved = settle_bricks(deepcopy(bricks), ignore_brick_index=i, do_move=True)    
+    # Part 2 wants to see the chain reaction.
+    part2 += num_moved
+
+# Note: it's probably faster to remember the collision chain from computing part 1,
+#       then we could just sum the bricks above the collision for each one.
 answer(part1)
-#answer(part2)
+answer(part2)
